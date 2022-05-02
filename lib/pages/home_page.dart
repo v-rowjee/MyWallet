@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:chips_choice/chips_choice.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mywallet/models/transaction.dart';
@@ -23,6 +22,25 @@ class _HomePageState extends State<HomePage> {
   bool isExpense = true;
   bool isLoading = false;
 
+  int tag = 0;
+  List<String> expense = [
+    'Food',
+    'Entertainment',
+    'Transport',
+    'Fees',
+    'Mobile',
+    'Education',
+    'Clothes',
+    'Others'
+  ];
+  List<String> income = [
+    'Monthly Income',
+    'Pocket Money',
+    'Gift',
+    'Found',
+    'Others'
+  ];
+
   @override
   void initState() {
     refreshApp();
@@ -35,7 +53,6 @@ class _HomePageState extends State<HomePage> {
     detailController.clear();
     amountController.clear();
     setState(() => isLoading = false);
-    print("refreshed");
   }
 
   @override
@@ -75,7 +92,9 @@ class _HomePageState extends State<HomePage> {
                                     ' at ' +
                                     DateFormat('kk:mm').format(t.datetime)),
                             trailing: Text(
-                              t.isExpense ? '- Rs ' + t.amount.abs().toString() : '+ Rs ' + t.amount.abs().toString(),
+                              t.isExpense
+                                  ? '- Rs ' + t.amount.abs().toString()
+                                  : '+ Rs ' + t.amount.abs().toString(),
                               style: TextStyle(
                                   color: t.isExpense
                                       ? Colors.redAccent
@@ -89,94 +108,112 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
       floatingActionButton: FloatingActionButton(
-        child: const Icon(Icons.add),
-        backgroundColor: Theme.of(context).primaryColor,
-        onPressed: () async => _displayDialog(context),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-    );
-  }
-
-  _displayDialog(BuildContext context) async {
-    return showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Center(child: Text('NEW TRANSACTION')),
-            content: StatefulBuilder(
-              builder: (BuildContext context, StateSetter setState) => SizedBox(
-                height: 220,
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Income',style: TextStyle(color: isExpense ? Colors.white54 : Colors.white)),
-                          Switch(
-                            value: isExpense,
-                            onChanged: (value) {
-                              setState(() {
-                                isExpense = value;
-                              });
-                            },
-                            activeColor: Colors.white70,
+          child: const Icon(Icons.add),
+          backgroundColor: Theme.of(context).primaryColor,
+          onPressed: () async => showModalBottomSheet<void>(
+              context: context,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              isScrollControlled: true,
+              builder: (context) => StatefulBuilder(
+                builder: (BuildContext context, StateSetter setState) =>
+                    Padding(
+                      padding: const EdgeInsets.all(50),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('Income',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                      color: isExpense
+                                          ? Colors.white30
+                                          : Colors.white)),
+                              Switch(
+                                value: isExpense,
+                                onChanged: (value) {
+                                  setState(() {
+                                    isExpense = value;
+                                  });
+                                },
+                                activeColor: Colors.white70,
+                              ),
+                              Text('Expense',
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: isExpense
+                                          ? Colors.white
+                                          : Colors.white30))
+                            ],
                           ),
-                          Text('Expense',style: TextStyle(color: isExpense ? Colors.white : Colors.white54))
+                          const SizedBox(height: 30),
+                          Form(
+                            key: _formKey,
+                            child: TextFormField(
+                              controller: amountController,
+                              textInputAction: TextInputAction.go,
+                              validator: (value) {
+                                if (value!.isEmpty) {
+                                  return 'This field cannot be empty';
+                                } else if (int.parse(value) <= 0) {
+                                  return 'Enter a positive value only';
+                                } else {
+                                  return null;
+                                }
+                              },
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                      signed: false),
+                              decoration: const InputDecoration(
+                                  labelText: 'Amount',
+                                  border: OutlineInputBorder()),
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          ChipsChoice<int>.single(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            wrapped: true,
+                            choiceStyle: const C2ChoiceStyle(
+                              showCheckmark: false,
+                            ),
+                            padding: EdgeInsets.zero,
+                            value: tag,
+                            onChanged: (val) => setState(() => tag = val),
+                            choiceItems: C2Choice.listFrom<int, String>(
+                              source: isExpense ? expense : income,
+                              value: (i, v) => i,
+                              label: (i, v) => v,
+                            ),
+                          ),
+                          const SizedBox(height: 30),
+                          SizedBox(
+                            width: MediaQuery.of(context).size.width,
+                            height: 50,
+                            child: ElevatedButton(
+                              child: const Text('Confirm'),
+                              onPressed: () {
+                                addTransaction();
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ),
                         ],
                       ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        controller: detailController,
-                        validator: (value) => value!.isEmpty ? 'This field cannot be empty' : null,
-                        autofocus: true,
-                        textInputAction: TextInputAction.next,
-                        decoration: const InputDecoration(
-                            labelText: 'Detail', border: OutlineInputBorder()),
-                      ),
-                      const SizedBox(height: 25),
-                      TextFormField(
-                        controller: amountController,
-                        textInputAction: TextInputAction.go,
-                        validator: (value){
-                          if(value!.isEmpty) {
-                            return 'This field cannot be empty';
-                          } else if (int.parse(value) <= 0) {
-                            return 'Enter a positive value only';
-                          } else {
-                            return null;
-                          }
-                        },
-                        keyboardType:
-                            const TextInputType.numberWithOptions(signed: false),
-                        decoration: const InputDecoration(
-                            labelText: 'Amount', border: OutlineInputBorder()),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            actionsPadding: const EdgeInsets.all(16),
-            actions: <Widget>[
-              ElevatedButton(
-                child: const Center(child: Text('Submit')),
-                onPressed: () async {
-                  addTransaction();
-                  Navigator.of(context).pop();
-                },
-              )
-            ],
-          );
-        });
+                    ),
+              ))),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+    );
   }
 
   void addTransaction() {
     final int amount = int.parse(amountController.text);
     final newTrans = Transaction(
-        detail: detailController.text,
+        detail: isExpense ? expense[tag] : income[tag],
         amount: isExpense ? -amount : amount,
         isExpense: isExpense,
         datetime: DateTime.now());
