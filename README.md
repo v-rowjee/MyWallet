@@ -1,16 +1,9 @@
-# mywallet
+# MyWallet
 
-A new Flutter project.
+A Flutter mobile application to manage your income and expenses. 
+The app uses SharedPreferences package to store data locally.
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+        Homepage           |   Making a transaction
+:-------------------------:|:-------------------------:
+![MyWallet_expense](https://user-images.githubusercontent.com/84242585/166568302-28f01f2a-a404-4220-be2d-9f13ff818fb8.png)
+   |  ![MyWallet_homepage](https://user-images.githubusercontent.com/84242585/166568463-be3c181e-5855-4ee6-a33e-43a3ddbdb51f.png)
